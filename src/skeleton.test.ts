@@ -1,5 +1,5 @@
 import hexStringToRGB from "./skeleton";
 
 test("sum adds two numbers", () => {
-  expect(sum(4, 3)).toBe(7);
+  expect(hexStringToRGB("#FF9933")).toBe({ r: 255, g: 153, b: 51 });
 });
