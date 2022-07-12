@@ -10,12 +10,12 @@ function hexStringToRGB(hexString : string) : object  {
   const decimal : string[] =  ["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"]
   const hex : string[] =["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
 
-  const RGB : any[] = []
+  const RGB : number[] = []
 
   interface solution {
-    r: string;
-    g: string;
-    b: string;
+    r: number
+    g: number;
+    b: number;
   }
 
   let solution : solution 
@@ -41,8 +41,13 @@ function hexStringToRGB(hexString : string) : object  {
     
   })
 
+  solution = {
+    r: RGB[0],
+    g: RGB[1],
+    b: RGB[2]
+  }
 
-
+  console.log(solution)
   return solution
 
 }
