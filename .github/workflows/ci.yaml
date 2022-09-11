@@ -10,14 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install modules
-      run: yarn
-    - name: Check formatting with Prettier
-      run: yarn format:check
-    - name: Check quality with ESLint
-      run: yarn lint
-    - name: Check type compilation with TypeScript
-      run: yarn type-check
-    - name: Run tests with Jest
-      run: yarn test
+      - uses: actions/checkout@v2
+      - name: Install modules
+        run: yarn
+      - name: Check type compilation with TypeScript
+        run: yarn type-check
+      - name: Run tests with Jest
+        run: yarn test
