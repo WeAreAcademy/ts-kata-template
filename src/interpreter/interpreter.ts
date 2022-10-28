@@ -1,5 +1,14 @@
-import { parseInstruction } from "./parser";
-import { Instruction, RegisterName, Registers } from "./types";
+import { parseInstructionOrComment } from "./parser";
+import {
+    CommentOrInstruction,
+    ComparisonResult,
+    Instruction,
+    isComment,
+    isInstructionNotComment,
+    OtherState,
+    RegisterName,
+    Registers,
+} from "./types";
 import { UnreachableCodeError } from "./util";
 
 /* 
@@ -52,7 +61,11 @@ function literalOrRegValue(
         : registers[sourceRegOrValue];
 }
 
-function execute(instruction: Instruction, registers: Registers): number {
+function execute(
+    instruction: Instruction,
+    registers: Registers,
+    otherState: OtherState
+): number {
     switch (instruction.command) {
         case "mov":
             const v = literalOrRegValue(
@@ -61,7 +74,6 @@ function execute(instruction: Instruction, registers: Registers): number {
             );
             registers[instruction.toRegister] = v;
             return 1;
-
         case "inc":
             registers[instruction.registerName] += 1;
             return 1;
@@ -76,10 +88,62 @@ function execute(instruction: Instruction, registers: Registers): number {
             } else {
                 return instruction.offset;
             }
+        case "add":
+            registers[instruction.toRegister] += literalOrRegValue(
+                instruction.sourceRegOrValue,
+                registers
+            );
+            return 1;
+        case "sub":
+            registers[instruction.toRegister] -= literalOrRegValue(
+                instruction.sourceRegOrValue,
+                registers
+            );
+            return 1;
         case "mul":
             registers[instruction.toRegister] *= literalOrRegValue(
                 instruction.sourceRegOrValue,
                 registers
+            );
+            return 1;
+        case "div":
+            registers[instruction.toRegister] = Math.floor(
+                registers[instruction.toRegister] /
+                    literalOrRegValue(instruction.sourceRegOrValue, registers)
+            );
+            return 1;
+        case "label":
+            console.warn("LABEL NOT IMPLEMENTED", instruction.label);
+            return 1;
+        case "cmp":
+            const comparisonResult: "lt" | "eq" | "gt" = compare(
+                literalOrRegValue(instruction.x, registers),
+                literalOrRegValue(instruction.y, registers)
+            );
+            otherState.lastComparisonResult = comparisonResult;
+            return 1;
+
+        case "ret":
+            console.warn(instruction.command + " NOT IMPLEMENTED", instruction);
+            return 1;
+        case "msg":
+            console.warn(instruction.command + " NOT IMPLEMENTED", instruction);
+            return 1;
+        case "end":
+            console.warn(instruction.command + " NOT IMPLEMENTED", instruction);
+            return 1;
+
+        case "jmp":
+        case "jne":
+        case "je":
+        case "jge":
+        case "jg":
+        case "jle":
+        case "jl":
+        case "call":
+            console.warn(
+                instruction.command + " NOT IMPLEMENTED",
+                instruction.toLabel
             );
             return 1;
         default:
@@ -90,18 +154,23 @@ function execute(instruction: Instruction, registers: Registers): number {
     }
 }
 
-function interpret(programInstructions: string[]): Registers {
+function interpret(programInstructionStrings: string[]): Registers {
     //Will fail at this point if the input strings don't parse as instructions
-    const instructions: Instruction[] =
-        programInstructions.map(parseInstruction);
+    const instructionsOrComments: CommentOrInstruction[] =
+        programInstructionStrings.map(parseInstructionOrComment);
 
+    const instructions = instructionsOrComments.filter(isInstructionNotComment);
     const registers: Registers = {};
     let instructionPointer: number = 0;
     let counter = 0; //for runaway loop detection
-
+    const otherState: OtherState = { lastComparisonResult: null };
     while (instructionPointer < instructions.length) {
         const instruction: Instruction = instructions[instructionPointer];
-        let instructionPointerOffset = execute(instruction, registers);
+        let instructionPointerOffset = execute(
+            instruction,
+            registers,
+            otherState
+        );
         instructionPointer += instructionPointerOffset;
 
         //optional!
@@ -113,6 +182,15 @@ function interpret(programInstructions: string[]): Registers {
     }
 
     return registers;
+}
+function compare(arg0: number, arg1: number): ComparisonResult {
+    if (arg0 < arg1) {
+        return "lt";
+    }
+    if (arg0 > arg1) {
+        return "gt";
+    }
+    return "eq";
 }
 
 // interpret(["mov a -10", "mov b a", "inc a", "dec b", "jnz a -2"]);
