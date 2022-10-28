@@ -1,3 +1,4 @@
+import { shouldTrace } from "./debuggingConfig";
 import { parseInstructionOrComment } from "./parser";
 import {
     CommentOrInstruction,
@@ -114,7 +115,7 @@ export function execute(
             );
             return 1;
         case "mul":
-            console.log("multiply...");
+            shouldTrace && console.log("multiply...");
             registers[instruction.toRegister] *= literalOrRegValue(
                 instruction.sourceRegOrValue,
                 registers
@@ -222,6 +223,8 @@ export function assemblerInterpreter(rawProgramText: string): string | -1 {
         .map((l) => l.trim())
         .filter((l) => l.length > 0);
 
+    shouldTrace && console.log("trimmed lines: ", instrLines);
+
     const res = interpretInstructions(instrLines);
     if (res === -1) {
         return res;
@@ -239,8 +242,10 @@ export function interpretInstructions(
     //Will fail at this point if the input strings don't parse as instructions
     const instructionsOrComments: CommentOrInstruction[] =
         programInstructionStrings.map(parseInstructionOrComment);
+    shouldTrace && console.log({ instructionsOrComments });
 
     const instructions = instructionsOrComments.filter(isInstructionNotComment);
+    shouldTrace && console.log({ instructions });
     const registers: Registers = {};
     let instructionPointer: number = 0;
     let counter = 0; //for runaway loop detection

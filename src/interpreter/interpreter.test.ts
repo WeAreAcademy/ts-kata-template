@@ -223,8 +223,9 @@ describe.skip("smaller tests", () => {
         );
     });
 });
+
 describe("assemblerInterpreter", () => {
-    test.skip("raw program parses", () => {
+    test("raw program parses", () => {
         const rawProgramText = `
 ; My first program
 mov  a, 5
@@ -240,7 +241,7 @@ function:
         expect(assemblerInterpreter(rawProgramText)).toEqual("(5+1)/2 = 3");
     });
 
-    test.skip("factorial", () => {
+    test("factorial", () => {
         var program_factorial = `mov   a, 5
 mov   b, a
 mov   c, a
@@ -262,7 +263,7 @@ print:
         expect(assemblerInterpreter(program_factorial)).toEqual("5! = 120");
     });
 
-    test.skip("fib", () => {
+    test("fib", () => {
         var program_fibonacci = `mov   a, 8            ; value
 mov   b, 0            ; next
 mov   c, 0            ; counter
@@ -298,7 +299,7 @@ print:
         );
     });
 
-    test.skip("program_mod", () => {
+    test("program_mod", () => {
         var program_mod = `mov   a, 11           ; value1
 mov   b, 3            ; value2
 call  mod_func
@@ -316,7 +317,7 @@ mod_func:
         expect(assemblerInterpreter(program_mod)).toEqual("mod(11, 3) = 2");
     });
 
-    test.skip("program_gcd", () => {
+    test("program_gcd", () => {
         var program_gcd = `mov   a, 81         ; value1
 mov   b, 153        ; value2
 call  init
@@ -365,7 +366,7 @@ print:
         expect(assemblerInterpreter(program_gcd)).toEqual("gcd(81, 153) = 9");
     });
 
-    test.skip("program_fail", () => {
+    test("program_fail", () => {
         var program_fail = `call  func1
 call  print
 end
