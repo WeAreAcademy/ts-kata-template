@@ -61,6 +61,22 @@ function literalOrRegValue(
         : registers[sourceRegOrValue];
 }
 
+export type MsgComponent =
+    | { type: "literal"; value: string }
+    | { type: "registerName"; value: RegisterName };
+export type MsgStructure = MsgComponent[];
+export function substituteRegisterValues(
+    msg: MsgStructure,
+    regs: Registers
+): string {
+    return msg
+        .map((component) =>
+            component.type === "literal"
+                ? component.value
+                : regs[component.value]
+        )
+        .join("");
+}
 function execute(
     instruction: Instruction,
     registers: Registers,
@@ -127,7 +143,10 @@ function execute(
             console.warn(instruction.command + " NOT IMPLEMENTED", instruction);
             return 1;
         case "msg":
-            console.warn(instruction.command + " NOT IMPLEMENTED", instruction);
+            otherState.storedOutput = substituteRegisterValues(
+                instruction.message,
+                registers
+            );
             return 1;
         case "end":
             console.warn(instruction.command + " NOT IMPLEMENTED", instruction);
@@ -163,7 +182,10 @@ function interpret(programInstructionStrings: string[]): Registers {
     const registers: Registers = {};
     let instructionPointer: number = 0;
     let counter = 0; //for runaway loop detection
-    const otherState: OtherState = { lastComparisonResult: null };
+    const otherState: OtherState = {
+        lastComparisonResult: null,
+        storedOutput: null,
+    };
     while (instructionPointer < instructions.length) {
         const instruction: Instruction = instructions[instructionPointer];
         let instructionPointerOffset = execute(

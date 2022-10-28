@@ -1,3 +1,4 @@
+import { MsgStructure } from "./interpreter";
 export type Registers = { [key: string]: number };
 export type RegisterName =
     | "a"
@@ -76,7 +77,7 @@ export type Instruction =
       }
     | {
           command: "msg";
-          message: string;
+          message: MsgStructure;
       }
     | {
           command: "end";
@@ -99,6 +100,7 @@ export type Instruction =
 
 export interface OtherState {
     lastComparisonResult: ComparisonResult | null;
+    storedOutput: string | null;
 }
 
 export type ComparisonResult = "lt" | "eq" | "gt";

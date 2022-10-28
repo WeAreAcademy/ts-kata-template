@@ -1,4 +1,10 @@
-import { interpret, execute, Registers } from "./interpreter";
+import {
+    interpret,
+    execute,
+    Registers,
+    substituteRegisterValues,
+    MsgStructure,
+} from "./interpreter";
 import { OtherState } from "./types";
 test("original codewars tests pass", function () {
     expect(
@@ -11,7 +17,7 @@ test("original codewars tests pass", function () {
 });
 
 function defaultOtherState(): OtherState {
-    return { lastComparisonResult: null };
+    return { lastComparisonResult: null, storedOutput: null };
 }
 
 test("execute mov a <- 5 works", function () {
@@ -36,6 +42,30 @@ test("execute mov a <- b works", function () {
 
     expect(ipOffset).toEqual(1);
     expect(regs).toEqual({ a: 99, b: 99 });
+});
+
+test("execute mul a, b works", function () {
+    const regs: Registers = { b: 3 };
+    const ipOffset = execute(
+        { command: "mul", toRegister: "b", sourceRegOrValue: "b" },
+        regs,
+        defaultOtherState()
+    );
+
+    expect(ipOffset).toEqual(1);
+    expect(regs).toEqual({ b: 9 });
+});
+
+test("execute add a, b works", function () {
+    const regs: Registers = { b: 3 };
+    const ipOffset = execute(
+        { command: "add", toRegister: "b", sourceRegOrValue: 10 },
+        regs,
+        defaultOtherState()
+    );
+
+    expect(regs).toEqual({ b: 13 });
+    expect(ipOffset).toEqual(1);
 });
 
 test("execute inc a", function () {
@@ -96,14 +126,17 @@ test("execute cmp", function () {
         otherState
     );
 
-    expect(otherState).toEqual({ lastComparisonResult: "gt" });
+    expect(otherState.lastComparisonResult).toEqual("gt");
     expect(regs).toEqual({ a: 3, b: 2, c: 0 });
     expect(ipOffset).toEqual(1);
 });
 
 test("execute cmp", function () {
     const regs: Registers = { a: 3, b: 2, c: 0 };
-    const otherState: OtherState = { lastComparisonResult: "eq" };
+    const otherState: OtherState = {
+        lastComparisonResult: "eq",
+        storedOutput: null,
+    };
 
     const ipOffset = execute(
         { command: "cmp", x: "b", y: "a" },
@@ -111,7 +144,37 @@ test("execute cmp", function () {
         otherState
     );
 
-    expect(otherState).toEqual({ lastComparisonResult: "lt" });
+    expect(otherState.lastComparisonResult).toEqual("lt");
     expect(regs).toEqual({ a: 3, b: 2, c: 0 });
     expect(ipOffset).toEqual(1);
+});
+
+test("execute msg", function () {
+    const regs: Registers = { a: 3, b: 2, c: 0 };
+    const otherState: OtherState = {
+        lastComparisonResult: "eq",
+        storedOutput: null,
+    };
+
+    const ipOffset = execute(
+        {
+            command: "msg",
+            message: [{ type: "literal", value: "blah blah blah" }],
+        },
+        regs,
+        otherState
+    );
+
+    expect(otherState.storedOutput).toEqual("blah blah blah");
+});
+
+test("message substitution", function () {
+    const components: MsgStructure = [
+        { type: "literal", value: "10/2=" },
+        { type: "registerName", value: "k" },
+        { type: "literal", value: "the end" },
+    ];
+    const regs: Registers = { k: 5 };
+
+    expect(substituteRegisterValues(components, regs)).toBe("10/2=5the end");
 });

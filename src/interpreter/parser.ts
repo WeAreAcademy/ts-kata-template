@@ -1,3 +1,4 @@
+import { MsgStructure } from "./interpreter";
 import { CommentOrInstruction, Instruction, RegisterName } from "./types";
 
 function parseSourceRegOrValueOrFail(str: string): number | RegisterName {
@@ -43,7 +44,19 @@ export function parseInstructionOrComment(
             return { command };
         }
         case "msg": {
-            return { command, message: instructionString.trim().slice(4) }; //TODO: parse into list of lit strings and registers?
+            const msgStructure: MsgStructure = instructionString
+                .trim()
+                .slice(4)
+                .split(",")
+                .map((str) =>
+                    str.startsWith("'")
+                        ? { type: "literal", value: str }
+                        : {
+                              type: "registerName",
+                              value: parseRegisterNameOrFail(str),
+                          }
+                );
+            return { command, message: msgStructure }; //TODO: parse into list of lit strings and registers?
         }
         case "end": {
             return { command };
