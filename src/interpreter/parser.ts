@@ -1,3 +1,4 @@
+import { shouldTrace } from "./debuggingConfig";
 import { MsgStructure } from "./interpreter";
 import { CommentOrInstruction, Instruction, RegisterName } from "./types";
 
@@ -17,7 +18,7 @@ export function parseInstructionOrComment(
 
     if (instructionString.trim().endsWith(":")) {
         const label = instructionString.split(":")[0];
-        console.log("found label: ", label);
+        shouldTrace && console.log("found label: ", label);
         return { command: "label", label };
     }
 
@@ -45,7 +46,7 @@ export function parseInstructionOrComment(
         case "cmp": {
             return {
                 command,
-                x: parseSourceRegOrValueOrFail(c),
+                x: parseSourceRegOrValueOrFail(b),
                 y: parseSourceRegOrValueOrFail(c),
             };
         }
