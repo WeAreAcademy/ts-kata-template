@@ -104,17 +104,6 @@ function parseRegisterNameOrFail(candidate: string): RegisterName {
     throw new Error("invalid register name: '" + candidate + "'");
 }
 
-function remQuotes(quotedString: string): string {
-    const trimmed = quotedString.trim();
-    if (trimmed[0] === trimmed[trimmed.length - 1] && trimmed[0] === "'") {
-        return trimmed.slice(1, -1);
-    } else {
-        throw new Error(
-            "can't remove quotes - not surrounded by quotes: " + quotedString
-        );
-    }
-}
-
 // msg   'mod(', a, ', ', b, ') = ', d        ; output
 //msg   a, '! = ', c ; output text
 //TODO: simplify this overly complex parser for msg instruction string
