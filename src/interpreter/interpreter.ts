@@ -141,6 +141,8 @@ export function execute(
             return 1;
 
         case "msg":
+            shouldTrace &&
+                console.log({ instrmsg: instruction.message, registers });
             otherState.storedOutput = substituteRegisterValues(
                 instruction.message,
                 registers

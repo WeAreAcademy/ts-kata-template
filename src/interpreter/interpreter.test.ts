@@ -7,7 +7,7 @@ import {
 } from "./interpreter";
 import { OtherState, Registers } from "./types";
 
-describe.skip("smaller tests", () => {
+describe("smaller tests", () => {
     test("original codewars tests pass", function () {
         const res = interpretInstructions([
             "mov a, -10",

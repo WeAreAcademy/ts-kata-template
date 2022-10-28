@@ -56,18 +56,10 @@ export function parseInstructionOrComment(
         case "msg": {
             //TODO: this does not handle , in message literals (only as a separator)
             //TODO: this does not remove ; comments
-            const msgStructure: MsgStructure = instructionString
-                .trim()
-                .slice(4)
-                .split(",")
-                .map((str) =>
-                    str.trim().startsWith("'")
-                        ? { type: "literal", value: remQuotes(str.trim()) }
-                        : {
-                              type: "registerName",
-                              value: parseRegisterNameOrFail(str.trim()),
-                          }
-                );
+            const msgStructure: MsgStructure = parseMsgStructure(
+                instructionString.trim().slice(4)
+            );
+
             return { command, message: msgStructure }; //TODO: parse into list of lit strings and registers?
         }
         case "end": {
@@ -113,5 +105,63 @@ function parseRegisterNameOrFail(candidate: string): RegisterName {
 }
 
 function remQuotes(quotedString: string): string {
-    return quotedString.trim().slice(1, -1);
+    const trimmed = quotedString.trim();
+    if (trimmed[0] === trimmed[trimmed.length - 1] && trimmed[0] === "'") {
+        return trimmed.slice(1, -1);
+    } else {
+        throw new Error(
+            "can't remove quotes - not surrounded by quotes: " + quotedString
+        );
+    }
+}
+
+// msg   'mod(', a, ', ', b, ') = ', d        ; output
+//msg   a, '! = ', c ; output text
+//TODO: simplify this overly complex parser for msg instruction string
+export function parseMsgStructure(fullStr: string): MsgStructure {
+    let inString = false;
+    const allComponents: MsgStructure = [];
+    let stringInProgress = "";
+    let registerNameInProgress = "";
+
+    function pushRegisterName(rn: string) {
+        if (!isValidRegisterName(rn)) {
+            throw new Error("invalid register name: " + rn);
+        }
+        allComponents.push({
+            type: "registerName",
+            value: rn,
+        });
+    }
+    for (let c of fullStr) {
+        if (inString) {
+            if (c === "'") {
+                inString = !inString;
+                allComponents.push({
+                    type: "literal",
+                    value: stringInProgress,
+                });
+                stringInProgress = "";
+            } else {
+                stringInProgress += c;
+            }
+        } else {
+            if (c === "'") {
+                if (registerNameInProgress.length > 0) {
+                    pushRegisterName(registerNameInProgress);
+                }
+                registerNameInProgress = "";
+                inString = !inString;
+            } else if (c === ";") {
+                break;
+            } else if (c !== " " && c !== ",") {
+                registerNameInProgress += c;
+            }
+        }
+    }
+    if (!inString && registerNameInProgress) {
+        pushRegisterName(registerNameInProgress);
+        registerNameInProgress = "";
+    }
+    return allComponents;
 }
