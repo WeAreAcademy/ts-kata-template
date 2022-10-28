@@ -8,14 +8,21 @@ function parseSourceRegOrValueOrFail(str: string): number | RegisterName {
 export function parseInstructionOrComment(
     instructionString: string
 ): CommentOrInstruction {
+    // console.log("parsing instruction/comment: " + instructionString);
     if (instructionString.startsWith(";")) {
         return { command: "comment", comment: instructionString.slice(0) };
     }
+    //remove comments
+    instructionString = instructionString.replace(/;.*/, "");
+
     if (instructionString.endsWith(":")) {
         return { command: "label", label: instructionString.split(":")[0] };
     }
 
-    const [command, b, c] = instructionString.split(" ");
+    const [command, b, c] = instructionString
+        .split(" ")
+        .map((s) => s.replace(/[,]$/, "").trim())
+        .filter((s) => s.length > 0);
 
     switch (command) {
         case "inc":
@@ -51,11 +58,11 @@ export function parseInstructionOrComment(
                 .slice(4)
                 .split(",")
                 .map((str) =>
-                    str.startsWith("'")
-                        ? { type: "literal", value: str }
+                    str.trim().startsWith("'")
+                        ? { type: "literal", value: remQuotes(str.trim()) }
                         : {
                               type: "registerName",
-                              value: parseRegisterNameOrFail(str),
+                              value: parseRegisterNameOrFail(str.trim()),
                           }
                 );
             return { command, message: msgStructure }; //TODO: parse into list of lit strings and registers?
@@ -76,12 +83,6 @@ export function parseInstructionOrComment(
                 toLabel: b,
             };
         }
-        case "jnz":
-            return {
-                command,
-                registerName: parseRegisterNameOrFail(b),
-                offset: parseInt(c),
-            };
 
         default:
             throw new Error(
@@ -105,5 +106,9 @@ function parseRegisterNameOrFail(candidate: string): RegisterName {
     if (isValidRegisterName(candidate)) {
         return candidate;
     }
-    throw new Error("invalid register name: " + candidate);
+    throw new Error("invalid register name: '" + candidate + "'");
+}
+
+function remQuotes(quotedString: string): string {
+    return quotedString.trim().slice(1, -1);
 }

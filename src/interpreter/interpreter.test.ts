@@ -1,19 +1,43 @@
 import {
-    interpret,
     execute,
-    Registers,
-    substituteRegisterValues,
+    interpret,
+    interpretInstructions,
     MsgStructure,
+    substituteRegisterValues,
 } from "./interpreter";
-import { OtherState } from "./types";
+import { OtherState, Registers } from "./types";
 test("original codewars tests pass", function () {
-    expect(
-        interpret(["mov a -10", "mov b a", "inc a", "dec b", "jnz a -2"])
-    ).toEqual({ a: 0, b: -20 });
+    const res = interpretInstructions([
+        "mov a, -10",
+        "mov b, a",
+        "inc a",
+        "dec b",
+        "foo:",
+        "cmp a, 0",
+        "jg foo",
+        "end",
+    ]);
+    if (res === -1) {
+        throw new Error("unexpected.  todo: use jest for this");
+    }
+    // expect(res.registers).toEqual({ a: 0, b: -20 });
 
-    expect(
-        interpret(["mov a 5", "inc a", "dec a", "dec a", "jnz a -1", "inc a"])
-    ).toEqual({ a: 1 });
+    const res2 = interpretInstructions([
+        "mov a, 5",
+        "inc a",
+        "dec a",
+        "dec a",
+        "label2:",
+        "cmp 0, 0",
+        "jl label2",
+        "inc a",
+        "end",
+    ]);
+
+    if (res2 === -1) {
+        throw new Error("unexpected.  todo: use jest for this");
+    }
+    // expect(res2.registers).toEqual({ a: 1 });
 });
 
 function defaultState() {
@@ -99,32 +123,6 @@ test("execute dec b", function () {
 
     expect(ipOffset).toEqual(1);
     expect(regs).toEqual({ a: 3, b: 99 });
-});
-
-test("execute jnz c -5 does not jump when not zero", function () {
-    const regs: Registers = { a: 0, b: 100, c: 2 };
-    const ipOffset = execute(
-        { command: "jnz", registerName: "a", offset: -5 },
-        regs,
-        defaultState(),
-        defaultInstructionPointer()
-    );
-
-    expect(ipOffset).toEqual(1);
-    expect(regs).toEqual({ a: 0, b: 100, c: 2 });
-});
-
-test("execute jnz c -5 jumps when zero", function () {
-    const regs: Registers = { a: 3, b: 100, c: 0 };
-    const ipOffset = execute(
-        { command: "jnz", registerName: "a", offset: -5 },
-        regs,
-        defaultState(),
-        defaultInstructionPointer()
-    );
-
-    expect(ipOffset).toEqual(-5);
-    expect(regs).toEqual({ a: 3, b: 100, c: 0 });
 });
 
 test("execute label", function () {
@@ -214,4 +212,20 @@ test("message substitution", function () {
     const regs: Registers = { k: 5 };
 
     expect(substituteRegisterValues(components, regs)).toBe("10/2=5the end");
+});
+
+test("raw program parses", () => {
+    const rawProgramText = `
+; My first program
+mov  a, 5
+inc  a
+call function
+msg  '(5+1)/2 = ', a    ; output message
+end
+
+function:
+    div  a, 2
+    ret
+`;
+    expect(interpret(rawProgramText)).toEqual("(5+1)/2 = 3");
 });

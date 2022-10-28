@@ -87,7 +87,6 @@ export type Instruction =
       }
     | { command: "inc"; registerName: RegisterName }
     | { command: "dec"; registerName: RegisterName }
-    | { command: "jnz"; registerName: RegisterName; offset: number }
     | { command: "jmp"; toLabel: string }
     | { command: "jmp"; toLabel: LabelName }
     | { command: "jne"; toLabel: LabelName }
@@ -105,3 +104,5 @@ export interface OtherState {
 }
 
 export type ComparisonResult = "lt" | "eq" | "gt";
+
+export type InstructionPointerOffset = number;

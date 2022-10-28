@@ -3,8 +3,9 @@ import {
     CommentOrInstruction,
     ComparisonResult,
     Instruction,
-    isComment,
+    InstructionPointerOffset,
     isInstructionNotComment,
+    LabelName,
     OtherState,
     RegisterName,
     Registers,
@@ -77,12 +78,13 @@ export function substituteRegisterValues(
         )
         .join("");
 }
-function execute(
+
+export function execute(
     instruction: Instruction,
     registers: Registers,
     otherState: OtherState,
     currentInstructionPointer: number
-): number {
+): InstructionPointerOffset | LabelName {
     switch (instruction.command) {
         case "mov":
             const v = literalOrRegValue(
@@ -99,12 +101,6 @@ function execute(
             registers[instruction.registerName] -= 1;
             return 1;
 
-        case "jnz":
-            if (registers[instruction.registerName] === 0) {
-                return 1;
-            } else {
-                return instruction.offset;
-            }
         case "add":
             registers[instruction.toRegister] += literalOrRegValue(
                 instruction.sourceRegOrValue,
@@ -150,16 +146,63 @@ function execute(
             );
             return 1;
         case "end":
-            console.warn(instruction.command + " NOT IMPLEMENTED", instruction);
             return 1;
-
         case "jmp":
+            return instruction.toLabel;
         case "jne":
+            failIfNoLastComparisonResult(otherState, instruction);
+            return otherState.lastComparisonResult !== "eq"
+                ? instruction.toLabel
+                : 1;
         case "je":
+            failIfNoLastComparisonResult(otherState, instruction);
+            return otherState.lastComparisonResult === "eq"
+                ? instruction.toLabel
+                : 1;
+
         case "jge":
+            if (!otherState.lastComparisonResult) {
+                throw new Error(
+                    "No last comparison result, yet a conditional jump was attempted: instruction: " +
+                        JSON.stringify(instruction)
+                );
+            }
+
+            return ["gt", "eq"].includes(otherState.lastComparisonResult)
+                ? instruction.toLabel
+                : 1;
         case "jg":
+            if (!otherState.lastComparisonResult) {
+                throw new Error(
+                    "No last comparison result, yet a conditional jump was attempted: instruction: " +
+                        JSON.stringify(instruction)
+                );
+            }
+            return ["gt"].includes(otherState.lastComparisonResult)
+                ? instruction.toLabel
+                : 1;
+
         case "jle":
+            if (!otherState.lastComparisonResult) {
+                throw new Error(
+                    "No last comparison result, yet a conditional jump was attempted: instruction: " +
+                        JSON.stringify(instruction)
+                );
+            }
+            return ["lt", "eq"].includes(otherState.lastComparisonResult)
+                ? instruction.toLabel
+                : 1;
+
         case "jl":
+            if (!otherState.lastComparisonResult) {
+                throw new Error(
+                    "No last comparison result, yet a conditional jump was attempted: instruction: " +
+                        JSON.stringify(instruction)
+                );
+            }
+            return ["lt"].includes(otherState.lastComparisonResult)
+                ? instruction.toLabel
+                : 1;
         case "call":
             console.warn(
                 instruction.command + " NOT IMPLEMENTED",
@@ -173,8 +216,26 @@ function execute(
             );
     }
 }
+export function interpret(rawProgramText: string): string | -1 {
+    const instrLines: string[] = rawProgramText
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
 
-function interpret(programInstructionStrings: string[]): Registers {
+    const res = interpretInstructions(instrLines);
+    if (res === -1) {
+        return res;
+    }
+    if (res.otherState.storedOutput === null) {
+        throw new Error("no stored output but 'end' command reached!");
+    }
+
+    return res.otherState.storedOutput;
+}
+
+export function interpretInstructions(
+    programInstructionStrings: string[]
+): -1 | { registers: Registers; otherState: OtherState } {
     //Will fail at this point if the input strings don't parse as instructions
     const instructionsOrComments: CommentOrInstruction[] =
         programInstructionStrings.map(parseInstructionOrComment);
@@ -190,13 +251,20 @@ function interpret(programInstructionStrings: string[]): Registers {
     };
     while (instructionPointer < instructions.length) {
         const instruction: Instruction = instructions[instructionPointer];
-        let instructionPointerOffset = execute(
+        let instructionPointerOffsetOrLabel = execute(
             instruction,
             registers,
             otherState,
             instructionPointer
         );
-        instructionPointer += instructionPointerOffset;
+        if (typeof instructionPointerOffsetOrLabel === "number") {
+            instructionPointer += instructionPointerOffsetOrLabel;
+        } else {
+            const newIP = otherState.labels[instructionPointerOffsetOrLabel];
+            if (newIP === undefined) {
+            }
+            instructionPointer = newIP;
+        }
 
         //optional!
         if (counter >= 10000) {
@@ -204,9 +272,13 @@ function interpret(programInstructionStrings: string[]): Registers {
                 "likely infinite loop.  executed: " + counter + " cycles"
             );
         }
+
+        if (instruction.command === "end") {
+            return { registers, otherState };
+        }
     }
 
-    return registers;
+    return -1;
 }
 function compare(arg0: number, arg1: number): ComparisonResult {
     if (arg0 < arg1) {
@@ -218,7 +290,17 @@ function compare(arg0: number, arg1: number): ComparisonResult {
     return "eq";
 }
 
+function failIfNoLastComparisonResult(
+    otherState: OtherState,
+    instruction: Instruction
+) {
+    if (otherState.lastComparisonResult === null) {
+        throw new Error(
+            "No last comparison result, yet a conditional jump was attempted: instruction: " +
+                JSON.stringify(instruction)
+        );
+    }
+}
+
 // interpret(["mov a -10", "mov b a", "inc a", "dec b", "jnz a -2"]);
 // should yield { a: 0, b: -20 }
-
-export { interpret, execute, Registers };
