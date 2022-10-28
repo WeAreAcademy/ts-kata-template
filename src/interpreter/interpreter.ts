@@ -84,7 +84,7 @@ export function execute(
     registers: Registers,
     otherState: OtherState,
     currentInstructionPointer: number
-): InstructionPointerOffset | LabelName {
+): InstructionPointerOffset | LabelName | { exact: number } {
     switch (instruction.command) {
         case "mov":
             const v = literalOrRegValue(
@@ -126,7 +126,9 @@ export function execute(
             );
             return 1;
         case "label":
-            otherState.labels[instruction.label] = currentInstructionPointer;
+            //labels are PRE-processed. They are not executed in the main flow.
+            // console.log("processing label adding: ", instruction.label);
+            // otherState.labels[instruction.label] = currentInstructionPointer;
             return 1;
         case "cmp":
             const comparisonResult: "lt" | "eq" | "gt" = compare(
@@ -136,9 +138,6 @@ export function execute(
             otherState.lastComparisonResult = comparisonResult;
             return 1;
 
-        case "ret":
-            console.warn(instruction.command + " NOT IMPLEMENTED", instruction);
-            return 1;
         case "msg":
             otherState.storedOutput = substituteRegisterValues(
                 instruction.message,
@@ -204,11 +203,11 @@ export function execute(
                 ? instruction.toLabel
                 : 1;
         case "call":
-            console.warn(
-                instruction.command + " NOT IMPLEMENTED",
-                instruction.toLabel
-            );
-            return 1;
+            otherState.stack.push(currentInstructionPointer + 1);
+            return instruction.toLabel;
+
+        case "ret":
+            return { exact: otherState.stack.pop()! }; ///TODO; check there's something on the stack!
         default:
             throw new UnreachableCodeError(
                 instruction,
@@ -244,10 +243,19 @@ export function interpretInstructions(
     const registers: Registers = {};
     let instructionPointer: number = 0;
     let counter = 0; //for runaway loop detection
+    const builtLabels: [string, number][] = instructions
+        .map((instr, ix) =>
+            instr.command === "label"
+                ? ([instr.label, ix] as [string, number])
+                : null
+        )
+        .filter((l) => l !== null) as [string, number][]; //TODO: use guard
+
     const otherState: OtherState = {
         lastComparisonResult: null,
         storedOutput: null,
-        labels: {},
+        stack: [],
+        labels: Object.fromEntries(builtLabels),
     };
     while (instructionPointer < instructions.length) {
         const instruction: Instruction = instructions[instructionPointer];
@@ -259,11 +267,19 @@ export function interpretInstructions(
         );
         if (typeof instructionPointerOffsetOrLabel === "number") {
             instructionPointer += instructionPointerOffsetOrLabel;
-        } else {
+        } else if (typeof instructionPointerOffsetOrLabel === "string") {
             const newIP = otherState.labels[instructionPointerOffsetOrLabel];
             if (newIP === undefined) {
+                throw new Error(
+                    "missing label: " +
+                        instructionPointerOffsetOrLabel +
+                        ", labels: " +
+                        JSON.stringify(otherState.labels)
+                );
             }
             instructionPointer = newIP;
+        } else {
+            instructionPointer = instructionPointerOffsetOrLabel.exact;
         }
 
         //optional!

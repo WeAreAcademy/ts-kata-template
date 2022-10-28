@@ -15,8 +15,10 @@ export function parseInstructionOrComment(
     //remove comments
     instructionString = instructionString.replace(/;.*/, "");
 
-    if (instructionString.endsWith(":")) {
-        return { command: "label", label: instructionString.split(":")[0] };
+    if (instructionString.trim().endsWith(":")) {
+        const label = instructionString.split(":")[0];
+        console.log("found label: ", label);
+        return { command: "label", label };
     }
 
     const [command, b, c] = instructionString
