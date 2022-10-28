@@ -114,6 +114,7 @@ export function execute(
             );
             return 1;
         case "mul":
+            console.log("multiply...");
             registers[instruction.toRegister] *= literalOrRegValue(
                 instruction.sourceRegOrValue,
                 registers
@@ -215,7 +216,7 @@ export function execute(
             );
     }
 }
-export function interpret(rawProgramText: string): string | -1 {
+export function assemblerInterpreter(rawProgramText: string): string | -1 {
     const instrLines: string[] = rawProgramText
         .split("\n")
         .map((l) => l.trim())
@@ -255,7 +256,7 @@ export function interpretInstructions(
         lastComparisonResult: null,
         storedOutput: null,
         stack: [],
-        labels: Object.fromEntries(builtLabels),
+        labels: fromEntries(builtLabels),
     };
     while (instructionPointer < instructions.length) {
         const instruction: Instruction = instructions[instructionPointer];
@@ -318,5 +319,10 @@ function failIfNoLastComparisonResult(
     }
 }
 
-// interpret(["mov a -10", "mov b a", "inc a", "dec b", "jnz a -2"]);
-// should yield { a: 0, b: -20 }
+function fromEntries(builtLabels: [string, number][]): {
+    [key: string]: number;
+} {
+    const res: { [key: string]: number } = {};
+    builtLabels.forEach(([k, v]) => (res[k] = v));
+    return res;
+}
