@@ -80,7 +80,8 @@ export function substituteRegisterValues(
 function execute(
     instruction: Instruction,
     registers: Registers,
-    otherState: OtherState
+    otherState: OtherState,
+    currentInstructionPointer: number
 ): number {
     switch (instruction.command) {
         case "mov":
@@ -129,7 +130,7 @@ function execute(
             );
             return 1;
         case "label":
-            console.warn("LABEL NOT IMPLEMENTED", instruction.label);
+            otherState.labels[instruction.label] = currentInstructionPointer;
             return 1;
         case "cmp":
             const comparisonResult: "lt" | "eq" | "gt" = compare(
@@ -185,13 +186,15 @@ function interpret(programInstructionStrings: string[]): Registers {
     const otherState: OtherState = {
         lastComparisonResult: null,
         storedOutput: null,
+        labels: {},
     };
     while (instructionPointer < instructions.length) {
         const instruction: Instruction = instructions[instructionPointer];
         let instructionPointerOffset = execute(
             instruction,
             registers,
-            otherState
+            otherState,
+            instructionPointer
         );
         instructionPointer += instructionPointerOffset;
 

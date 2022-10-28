@@ -16,16 +16,20 @@ test("original codewars tests pass", function () {
     ).toEqual({ a: 1 });
 });
 
-function defaultOtherState(): OtherState {
-    return { lastComparisonResult: null, storedOutput: null };
+function defaultState() {
+    return { lastComparisonResult: null, storedOutput: null, labels: {} };
 }
 
+function defaultInstructionPointer() {
+    return 100;
+}
 test("execute mov a <- 5 works", function () {
     const regs: Registers = {};
     const ipOffset = execute(
         { command: "mov", toRegister: "a", sourceRegOrValue: 5 },
         regs,
-        defaultOtherState()
+        defaultState(),
+        defaultInstructionPointer()
     );
 
     expect(ipOffset).toEqual(1);
@@ -37,7 +41,8 @@ test("execute mov a <- b works", function () {
     const ipOffset = execute(
         { command: "mov", toRegister: "a", sourceRegOrValue: "b" },
         regs,
-        defaultOtherState()
+        defaultState(),
+        defaultInstructionPointer()
     );
 
     expect(ipOffset).toEqual(1);
@@ -49,7 +54,8 @@ test("execute mul a, b works", function () {
     const ipOffset = execute(
         { command: "mul", toRegister: "b", sourceRegOrValue: "b" },
         regs,
-        defaultOtherState()
+        defaultState(),
+        defaultInstructionPointer()
     );
 
     expect(ipOffset).toEqual(1);
@@ -61,7 +67,8 @@ test("execute add a, b works", function () {
     const ipOffset = execute(
         { command: "add", toRegister: "b", sourceRegOrValue: 10 },
         regs,
-        defaultOtherState()
+        defaultState(),
+        defaultInstructionPointer()
     );
 
     expect(regs).toEqual({ b: 13 });
@@ -73,7 +80,8 @@ test("execute inc a", function () {
     const ipOffset = execute(
         { command: "inc", registerName: "a" },
         regs,
-        defaultOtherState()
+        defaultState(),
+        defaultInstructionPointer()
     );
 
     expect(ipOffset).toEqual(1);
@@ -85,7 +93,8 @@ test("execute dec b", function () {
     const ipOffset = execute(
         { command: "dec", registerName: "b" },
         regs,
-        defaultOtherState()
+        defaultState(),
+        defaultInstructionPointer()
     );
 
     expect(ipOffset).toEqual(1);
@@ -97,7 +106,8 @@ test("execute jnz c -5 does not jump when not zero", function () {
     const ipOffset = execute(
         { command: "jnz", registerName: "a", offset: -5 },
         regs,
-        defaultOtherState()
+        defaultState(),
+        defaultInstructionPointer()
     );
 
     expect(ipOffset).toEqual(1);
@@ -109,21 +119,46 @@ test("execute jnz c -5 jumps when zero", function () {
     const ipOffset = execute(
         { command: "jnz", registerName: "a", offset: -5 },
         regs,
-        defaultOtherState()
+        defaultState(),
+        defaultInstructionPointer()
     );
 
     expect(ipOffset).toEqual(-5);
     expect(regs).toEqual({ a: 3, b: 100, c: 0 });
 });
 
+test("execute label", function () {
+    const otherState: OtherState = defaultState();
+
+    expect(otherState.labels.foo).toEqual(undefined);
+    expect(otherState.labels.bar).toEqual(undefined);
+
+    const ipOffset = execute(
+        { command: "label", label: "foo" },
+        {},
+        otherState,
+        22
+    );
+
+    expect(otherState.labels.foo).toEqual(22);
+    expect(ipOffset).toEqual(1);
+
+    execute({ command: "label", label: "bar" }, {}, otherState, 33);
+
+    expect(otherState.labels.foo).toEqual(22);
+    expect(otherState.labels.bar).toEqual(33);
+    expect(ipOffset).toEqual(1);
+});
+
 test("execute cmp", function () {
     const regs: Registers = { a: 3, b: 2, c: 0 };
-    const otherState: OtherState = defaultOtherState();
+    const otherState: OtherState = defaultState();
 
     const ipOffset = execute(
         { command: "cmp", x: 3, y: "b" },
         regs,
-        otherState
+        otherState,
+        defaultInstructionPointer()
     );
 
     expect(otherState.lastComparisonResult).toEqual("gt");
@@ -134,14 +169,15 @@ test("execute cmp", function () {
 test("execute cmp", function () {
     const regs: Registers = { a: 3, b: 2, c: 0 };
     const otherState: OtherState = {
+        ...defaultState(),
         lastComparisonResult: "eq",
-        storedOutput: null,
     };
 
     const ipOffset = execute(
         { command: "cmp", x: "b", y: "a" },
         regs,
-        otherState
+        otherState,
+        defaultInstructionPointer()
     );
 
     expect(otherState.lastComparisonResult).toEqual("lt");
@@ -152,8 +188,8 @@ test("execute cmp", function () {
 test("execute msg", function () {
     const regs: Registers = { a: 3, b: 2, c: 0 };
     const otherState: OtherState = {
+        ...defaultState(),
         lastComparisonResult: "eq",
-        storedOutput: null,
     };
 
     const ipOffset = execute(
@@ -162,7 +198,8 @@ test("execute msg", function () {
             message: [{ type: "literal", value: "blah blah blah" }],
         },
         regs,
-        otherState
+        otherState,
+        defaultInstructionPointer()
     );
 
     expect(otherState.storedOutput).toEqual("blah blah blah");

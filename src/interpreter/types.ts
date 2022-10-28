@@ -101,6 +101,7 @@ export type Instruction =
 export interface OtherState {
     lastComparisonResult: ComparisonResult | null;
     storedOutput: string | null;
+    labels: { [key: string]: number };
 }
 
 export type ComparisonResult = "lt" | "eq" | "gt";

@@ -44,6 +44,8 @@ export function parseInstructionOrComment(
             return { command };
         }
         case "msg": {
+            //TODO: this does not handle , in message literals (only as a separator)
+            //TODO: this does not remove ; comments
             const msgStructure: MsgStructure = instructionString
                 .trim()
                 .slice(4)
