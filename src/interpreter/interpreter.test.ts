@@ -39,7 +39,6 @@ describe("smaller tests", () => {
         if (res2 === -1) {
             throw new Error("unexpected.  todo: use jest for this");
         }
-        // expect(res2.registers).toEqual({ a: 1 });
     });
 
     function defaultState() {
