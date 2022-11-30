@@ -7,11 +7,13 @@
     "@types/jest": "^29.0.1",
     "@types/node": "14.x",
     "jest": "^29.0.3",
+    "rimraf": "^3.0.2",
     "ts-jest": "^29.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.3"
   },
   "scripts": {
+    "build": "rimraf ./dist; tsc",
     "lint": "eslint src",
     "make-js-for-one": "tsc src/skeleton.ts --outDir generatedJS",
     "format": "prettier --write src",
