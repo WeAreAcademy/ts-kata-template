@@ -22,7 +22,7 @@ yarn test --watchAll
 
 _Some_ codewars katas support typescript. Others only support JS submissions.
 
-Here's how to compile one stand-alone .ts file into .js for the latter type of akta.
+Here's how to compile one stand-alone .ts file into .js for the latter type of kata.
 
 You will first need to alter `make-js-for-one` in package.json to refer to the file you want compiled.
 
