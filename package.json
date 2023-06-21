@@ -15,7 +15,7 @@
   "scripts": {
     "build": "rimraf ./dist; tsc",
     "lint": "eslint src",
-    "make-js-for-one": "tsc src/skeleton.ts --outDir generatedJS",
+    "make-js-for-one": "tsc src/index.ts --outDir generatedJS",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "test": "jest",
