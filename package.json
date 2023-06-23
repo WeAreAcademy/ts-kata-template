@@ -9,8 +9,8 @@
     "make-js-for-one": "tsc src/skeleton.ts --outDir generatedJS",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
-    "test": "jest",
-    "test:watch": "jest --watchAll",
+    "test": "jest src",
+    "test:watch": "jest src --watchAll",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
