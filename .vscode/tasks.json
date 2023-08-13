@@ -2,11 +2,19 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "npm",
-            "script": "type-check",
+            "label": "yarn: type-check-and-lint",
+            "dependsOn": ["yarn: type-check", "yarn: lint"],
+            "dependsOrder": "sequence",
             "group": {
                 "kind": "build",
                 "isDefault": true
+            }
+        },
+        {
+            "type": "npm",
+            "script": "type-check",
+            "group": {
+                "kind": "build"
             },
             "problemMatcher": ["$tsc"],
             "label": "yarn: type-check",
@@ -15,6 +23,19 @@
                 "revealProblems": "onProblem",
                 //otherwise, don't open the terminal with tsc's happy output
                 //comment this out if you are debugging this task
+                "reveal": "silent"
+            }
+        },
+        {
+            "type": "npm",
+            "script": "lint",
+            "group": {
+                "kind": "build"
+            },
+            "problemMatcher": ["$eslint-stylish"],
+            "label": "yarn: lint",
+            "presentation": {
+                "revealProblems": "onProblem",
                 "reveal": "silent"
             }
         }
