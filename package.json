@@ -11,7 +11,8 @@
         "format:check": "prettier --check src",
         "test": "jest src",
         "test:watch": "jest src --watchAll",
-        "type-check": "tsc --noEmit"
+        "type-check": "tsc --noEmit",
+        "type-check-and-lint": "yarn type-check && yarn lint"
     },
     "devDependencies": {
         "@types/jest": "^29.5.1",
