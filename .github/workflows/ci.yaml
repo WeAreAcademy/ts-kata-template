@@ -1,19 +1,19 @@
 name: CI
 
 on:
-  push:
-  pull_request:
-    branches:
-      - main
+    push:
+    pull_request:
+        branches:
+            - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install modules
-        run: yarn
-      - name: Check type compilation with TypeScript
-        run: yarn type-check
-      - name: Run tests with Jest
-        run: yarn test
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Install modules
+              run: yarn
+            - name: Check type compilation with TypeScript
+              run: yarn type-check
+            - name: Run tests with Jest
+              run: yarn test
