@@ -1,29 +1,29 @@
 {
-  "name": "ts-kata-template",
-  "version": "1.0.1",
-  "main": "index.js",
-  "license": "CC-BY-NC-ND-4.0",
-  "scripts": {
-    "build": "rimraf ./dist; tsc",
-    "lint": "eslint src",
-    "make-js-for-one": "tsc src/skeleton.ts --outDir generatedJS",
-    "format": "prettier --write src",
-    "format:check": "prettier --check src",
-    "test": "jest src",
-    "test:watch": "jest src --watchAll",
-    "type-check": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.1",
-    "@types/node": "16.18.23",
-    "@typescript-eslint/eslint-plugin": "^5.60.0",
-    "@typescript-eslint/parser": "^5.60.0",
-    "eslint": "^8.43.0",
-    "jest": "^29.5.0",
-    "prettier": "^3.0.1",
-    "rimraf": "^5.0.0",
-    "ts-jest": "^29.1.0",
-    "ts-node": "^10.9.1",
-    "typescript": "~5.0.4"
-  }
+    "name": "ts-kata-template",
+    "version": "1.0.1",
+    "main": "index.js",
+    "license": "CC-BY-NC-ND-4.0",
+    "scripts": {
+        "build": "rimraf ./dist; tsc",
+        "lint": "eslint src",
+        "make-js-for-one": "tsc src/skeleton.ts --outDir generatedJS",
+        "format": "prettier --write src",
+        "format:check": "prettier --check src",
+        "test": "jest src",
+        "test:watch": "jest src --watchAll",
+        "type-check": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.1",
+        "@types/node": "16.18.23",
+        "@typescript-eslint/eslint-plugin": "^5.60.0",
+        "@typescript-eslint/parser": "^5.60.0",
+        "eslint": "^8.43.0",
+        "jest": "^29.5.0",
+        "prettier": "^3.0.1",
+        "rimraf": "^5.0.0",
+        "ts-jest": "^29.1.0",
+        "ts-node": "^10.9.1",
+        "typescript": "~5.0.4"
+    }
 }
