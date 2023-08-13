@@ -9,6 +9,8 @@
         "moduleResolution": "node",
         "sourceMap": true,
         "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
         "baseUrl": ".",
         "outDir": "dist",
         "paths": {
