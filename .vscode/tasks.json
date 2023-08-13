@@ -2,8 +2,8 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "yarn: type-check-and-lint",
-            "dependsOn": ["yarn: type-check", "yarn: lint"],
+            "label": "type-check-and-lint",
+            "dependsOn": ["type-check", "lint"],
             "dependsOrder": "sequence",
             "group": {
                 "kind": "build",
@@ -17,13 +17,14 @@
                 "kind": "build"
             },
             "problemMatcher": ["$tsc"],
-            "label": "yarn: type-check",
+            "label": "type-check",
             "presentation": {
                 //reveal problems list only if typechecker finds problems
                 "revealProblems": "onProblem",
                 //otherwise, don't open the terminal with tsc's happy output
                 //comment this out if you are debugging this task
-                "reveal": "silent"
+                "reveal": "silent",
+                "close": true
             }
         },
         {
@@ -33,10 +34,11 @@
                 "kind": "build"
             },
             "problemMatcher": ["$eslint-stylish"],
-            "label": "yarn: lint",
+            "label": "lint",
             "presentation": {
                 "revealProblems": "onProblem",
-                "reveal": "silent"
+                "reveal": "silent",
+                "close": true
             }
         }
     ]
