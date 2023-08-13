@@ -18,6 +18,26 @@ yarn test
 yarn test --watchAll
 ```
 
+## To type-check and lint (in vscode)
+
+ctrl-shift-b (or on mac, cmd-shift-b)
+
+## Debug in vscode
+
+Call the function you want to debug from `src/main.ts`
+
+Add a breakpoint in your function by clicking to the left of the relevant line number.
+
+Open the "run and debug" panel
+
+From the top choose "Debug main.ts"
+
+That's it, the debugger should launch and pause when your first breakpoint is encountered.
+
+This will compile your code before running, and will show you the typescript source even though in reality the debugger is stepping through the relevant compiled javascript. It is able to do this because tsconfig specifies `sourceMap: true` and an `ourDir` location.
+
+If you're curious you can see the specific details in `./vscode/launch.json`
+
 ## To compile for codewars
 
 _Some_ codewars katas support typescript. Others only support JS submissions.
