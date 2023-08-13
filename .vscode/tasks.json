@@ -3,13 +3,20 @@
     "tasks": [
         {
             "type": "npm",
-            "script": "type-check-and-lint",
+            "script": "type-check",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "problemMatcher": ["$tsc"],
-            "label": "npm: type-check-and-lint"
+            "label": "yarn: type-check",
+            "presentation": {
+                //reveal problems list only if typechecker finds problems
+                "revealProblems": "onProblem",
+                //otherwise, don't open the terminal with tsc's happy output
+                //comment this out if you are debugging this task
+                "reveal": "silent"
+            }
         }
     ]
 }
